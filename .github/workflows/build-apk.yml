@@ -1,0 +1,89 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          git \
+          ffmpeg \
+          libsdl2-dev \
+          libsdl2-image-dev \
+          libsdl2-mixer-dev \
+          libsdl2-ttf-dev \
+          libportmidi-dev \
+          libswscale-dev \
+          libavformat-dev \
+          libavcodec-dev \
+          zlib1g-dev \
+          libgstreamer1.0-dev \
+          gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good \
+          libunwind-dev \
+          autoconf \
+          automake \
+          libtool \
+          pkg-config \
+          libffi-dev \
+          libltdl-dev \
+          cmake \
+          zip \
+          unzip
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install buildozer cython virtualenv
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Build APK with Buildozer
+      run: |
+        # 设置buildozer环境变量
+        export ANDROIDSDK=$ANDROID_SDK_ROOT
+        
+        # 初始化buildozer（如果需要）
+        buildozer android debug 2>&1 | tee build.log
+      env:
+        BUILDOZER_LOG_LEVEL: 2
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dayanshifa-apk
+        path: bin/*.apk
+        if-no-files-found: warn
+
+    - name: Upload build log on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log
