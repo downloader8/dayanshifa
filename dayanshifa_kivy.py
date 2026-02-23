@@ -22,9 +22,22 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Rectangle, Color, Line
 from kivy.core.window import Window
 from kivy.core.clipboard import Clipboard
+from kivy.core.text import LabelBase
 from kivy.clock import Clock
 from kivy.metrics import dp, sp
 from kivy.utils import platform
+
+# 设置窗口背景色为淡蓝色
+Window.clearcolor = (0.878, 0.925, 0.961, 1)  # 淡蓝色 #E0ECF5
+
+# 注册中文字体
+import os
+FONT_PATH = os.path.join(os.path.dirname(__file__), 'fonts', 'DroidSansFallback.ttf')
+if os.path.exists(FONT_PATH):
+    LabelBase.register(name='ChineseFont', fn_regular=FONT_PATH)
+    DEFAULT_FONT = 'ChineseFont'
+else:
+    DEFAULT_FONT = None
 
 # 六十四卦数据
 HEXAGRAMS = {
@@ -147,7 +160,7 @@ class StrawCanvas(Widget):
         """清空画布"""
         self.canvas.clear()
         with self.canvas:
-            Color(1, 1, 1, 1)
+            Color(0.878, 0.925, 0.961, 1)  # 淡蓝色背景
             Rectangle(pos=self.pos, size=self.size)
     
     def draw_initial_straws(self):
@@ -156,7 +169,7 @@ class StrawCanvas(Widget):
         self.straw_positions = []
         
         with self.canvas:
-            Color(1, 1, 1, 1)
+            Color(0.878, 0.925, 0.961, 1)  # 淡蓝色背景
             Rectangle(pos=self.pos, size=self.size)
             
             straw_height = dp(50)
@@ -194,7 +207,7 @@ class StrawCanvas(Widget):
         self.divide_straw_positions = []
         
         with self.canvas:
-            Color(1, 1, 1, 1)
+            Color(0.878, 0.925, 0.961, 1)  # 淡蓝色背景
             Rectangle(pos=self.pos, size=self.size)
             
             # 太极
@@ -228,7 +241,7 @@ class StrawCanvas(Widget):
         self.right_pile_areas = []
         
         with self.canvas:
-            Color(1, 1, 1, 1)
+            Color(0.878, 0.925, 0.961, 1)  # 淡蓝色背景
             Rectangle(pos=self.pos, size=self.size)
             
             # 太极
@@ -318,7 +331,7 @@ class StrawCanvas(Widget):
         self.canvas.clear()
         
         with self.canvas:
-            Color(1, 1, 1, 1)
+            Color(0.878, 0.925, 0.961, 1)  # 淡蓝色背景
             Rectangle(pos=self.pos, size=self.size)
             
             yao_height = dp(12)
@@ -408,6 +421,9 @@ class DaYanApp(App):
         """构建UI"""
         self.title = "大衍筮法起卦"
         
+        # 字体参数
+        font_kwargs = {'font_name': DEFAULT_FONT} if DEFAULT_FONT else {}
+        
         # 主布局
         main_layout = BoxLayout(orientation='vertical', padding=dp(10), spacing=dp(5))
         
@@ -418,7 +434,8 @@ class DaYanApp(App):
             hint_text='输入求卦事项',
             multiline=False,
             font_size=sp(16),
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            **font_kwargs
         )
         top_layout.add_widget(self.question_input)
         
@@ -426,7 +443,8 @@ class DaYanApp(App):
             text='开始',
             font_size=sp(16),
             size_hint_x=0.15,
-            on_press=self.start_divination
+            on_press=self.start_divination,
+            **font_kwargs
         )
         top_layout.add_widget(start_btn)
         
@@ -434,7 +452,8 @@ class DaYanApp(App):
             text='历史',
             font_size=sp(16),
             size_hint_x=0.15,
-            on_press=self.show_history
+            on_press=self.show_history,
+            **font_kwargs
         )
         top_layout.add_widget(history_btn)
         
@@ -446,7 +465,8 @@ class DaYanApp(App):
             font_size=sp(14),
             size_hint_y=None,
             height=dp(30),
-            color=(0.2, 0.3, 0.3, 1)
+            color=(0.2, 0.3, 0.3, 1),
+            **font_kwargs
         )
         main_layout.add_widget(self.progress_label)
         
@@ -462,7 +482,8 @@ class DaYanApp(App):
             font_size=sp(14),
             size_hint_y=None,
             height=dp(25),
-            color=(0.3, 0.3, 0.3, 1)
+            color=(0.3, 0.3, 0.3, 1),
+            **font_kwargs
         )
         main_layout.add_widget(self.pile_label)
         
@@ -475,7 +496,8 @@ class DaYanApp(App):
             text_size=(Window.width - dp(20), None),
             halign='center',
             valign='middle',
-            color=(0.2, 0.2, 0.2, 1)
+            color=(0.2, 0.2, 0.2, 1),
+            **font_kwargs
         )
         self.hint_label.bind(size=self._update_text_size)
         main_layout.add_widget(self.hint_label)
@@ -486,7 +508,8 @@ class DaYanApp(App):
             font_size=sp(14),
             size_hint_y=None,
             height=dp(80),
-            color=(0.1, 0.1, 0.1, 1)
+            color=(0.1, 0.1, 0.1, 1),
+            **font_kwargs
         )
         main_layout.add_widget(self.result_label)
         
@@ -497,7 +520,8 @@ class DaYanApp(App):
             text='复制卦象',
             font_size=sp(14),
             disabled=True,
-            on_press=self.copy_result
+            on_press=self.copy_result,
+            **font_kwargs
         )
         btn_layout.add_widget(self.copy_btn)
         
@@ -505,11 +529,15 @@ class DaYanApp(App):
             text='带提示词复制',
             font_size=sp(14),
             disabled=True,
-            on_press=self.copy_result_with_prompt
+            on_press=self.copy_result_with_prompt,
+            **font_kwargs
         )
         btn_layout.add_widget(self.copy_prompt_btn)
         
         main_layout.add_widget(btn_layout)
+        
+        # 保存字体参数供其他方法使用
+        self.font_kwargs = font_kwargs
         
         return main_layout
     
@@ -844,7 +872,8 @@ class DaYanApp(App):
                 text=f"{item.get('question', '未知')} - {item.get('original_name', '')}",
                 size_hint_y=None,
                 height=dp(40),
-                font_size=sp(14)
+                font_size=sp(14),
+                **self.font_kwargs
             )
             btn.item = item
             btn.bind(on_press=self.show_history_detail)
@@ -853,7 +882,7 @@ class DaYanApp(App):
         scroll.add_widget(history_list)
         content.add_widget(scroll)
         
-        close_btn = Button(text='关闭', size_hint_y=None, height=dp(40))
+        close_btn = Button(text='关闭', size_hint_y=None, height=dp(40), **self.font_kwargs)
         content.add_widget(close_btn)
         
         popup = Popup(title='历史记录', content=content, size_hint=(0.9, 0.8))
@@ -940,9 +969,9 @@ class DaYanApp(App):
     def show_popup(self, title, message):
         """显示弹窗"""
         content = BoxLayout(orientation='vertical', padding=dp(10))
-        content.add_widget(Label(text=message, font_size=sp(14)))
+        content.add_widget(Label(text=message, font_size=sp(14), **self.font_kwargs))
         
-        close_btn = Button(text='确定', size_hint_y=None, height=dp(40))
+        close_btn = Button(text='确定', size_hint_y=None, height=dp(40), **self.font_kwargs)
         content.add_widget(close_btn)
         
         popup = Popup(title=title, content=content, size_hint=(0.8, 0.4))
